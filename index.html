@@ -9,33 +9,32 @@
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #f8faff; -webkit-tap-highlight-color: transparent; }
         .quran-text { font-family: 'Amiri', serif; line-height: 3; text-align: justify; text-align-last: center; }
-        .bismillah { font-family: 'Amiri', serif; font-size: 2.5em; color: #1e1b4b; text-align: center; margin: 30px 0; border-bottom: 1px double #e2e8f0; padding-bottom: 15px; }
+        .bismillah { font-family: 'Amiri', serif; font-size: 2.5em; color: #1e1b4b; text-align: center; margin: 30px 0; border-bottom: 1px double #e2e8f0; padding-bottom: 15px; width: 100%; display: block; }
         
         /* وسوم الأجزاء والأحزاب */
-        .juz-divider { display: block; width: 100%; text-align: center; background: #f0f4ff; border: 1px solid #dce4ff; color: #1e1b4b; padding: 15px; margin: 40px 0 20px 0; border-radius: 15px; font-weight: 900; font-size: 1.2em; clear: both; }
-        .hizb-badge { display: inline-flex; align-items: center; background: #facc15; color: #422006; padding: 2px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; margin-left: 8px; vertical-align: middle; border: 1px solid #eab308; }
+        .juz-divider { display: block; width: 100%; text-align: center; background: #eff6ff; border: 2px solid #dbeafe; color: #1e40af; padding: 20px; margin: 45px 0 25px 0; border-radius: 20px; font-weight: 900; font-size: 1.4em; clear: both; }
+        .hizb-badge { display: inline-flex; align-items: center; background: #facc15; color: #422006; padding: 4px 15px; border-radius: 12px; font-size: 13px; font-weight: 800; margin: 10px 5px; border: 1px solid #eab308; vertical-align: middle; }
 
         .surah-card.completed { background-color: #ecfdf5 !important; border-color: #10b981 !important; }
         .check-mark { display: none; position: absolute; top: 5px; right: 8px; color: #10b981; font-size: 14px; }
         .surah-card.completed .check-mark { display: block; }
         .hidden { display: none; }
-        .ayah-num { color: #10b981; font-weight: bold; margin: 0 6px; font-family: 'Amiri', serif; font-size: 1.2em; }
+        .ayah-num { color: #10b981; font-weight: bold; margin: 0 8px; font-family: 'Amiri', serif; font-size: 1.3em; }
         
         .nav-btn { background: white; border-radius: 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.2s; }
-        .nav-btn:active { scale: 0.95; }
     </style>
 </head>
 <body class="text-slate-900">
 
-    <!-- الصفحة الرئيسية -->
+    <!-- القائمة الرئيسية -->
     <div id="home-page" class="max-w-2xl mx-auto p-4 pb-24">
         <header class="text-center pt-16 pb-12">
             <h1 class="text-7xl font-black text-indigo-950 mb-6 tracking-tighter">القرآن الكريم</h1>
-            <p class="text-xl text-slate-500 font-medium">مصحف الحبي التعليمي - رواية حفص</p>
+            <p class="text-xl text-slate-500 font-medium">مصحف الحبي - ضبط الأجزاء والأحزاب</p>
         </header>
 
         <div class="mb-10 px-2">
-            <div class="bg-white rounded-3xl flex items-center p-2 border border-slate-100 shadow-sm">
+            <div class="bg-white rounded-3xl flex items-center p-2 border border-slate-200 shadow-sm">
                 <input type="text" id="surah-search" placeholder="ابحث عن سورة..." 
                        class="w-full p-4 outline-none text-lg bg-transparent font-bold text-slate-700" oninput="filterSurahs()">
                 <div class="bg-indigo-600 text-white p-4 rounded-2xl">🔍</div>
@@ -45,8 +44,8 @@
         <div id="surah-grid" class="grid grid-cols-3 gap-3 px-1"></div>
     </div>
 
-    <!-- صفحة القراءة -->
-    <div id="reading-page" class="max-w-3xl mx-auto hidden bg-white min-h-screen flex flex-col shadow-2xl">
+    <!-- واجهة القراءة -->
+    <div id="reading-page" class="max-w-4xl mx-auto hidden bg-white min-h-screen flex flex-col shadow-2xl">
         <div class="sticky top-0 bg-white/95 backdrop-blur z-30 p-5 flex justify-between items-center border-b">
             <button onclick="confirmExit()" class="text-indigo-600 font-black text-lg">🔙 القائمة</button>
             <h2 id="header-title" class="text-2xl font-black text-indigo-950"></h2>
@@ -61,14 +60,14 @@
             <div id="surah-content" class="quran-text text-slate-800"></div>
         </div>
 
-        <!-- أزرار التنقل السفلية -->
+        <!-- أزرار التحكم -->
         <div class="sticky bottom-0 bg-white border-t p-4 flex items-center justify-between gap-3 pb-8 px-6">
             <button id="prev-btn" onclick="askBeforeNavigate(-1)" class="nav-btn flex-1 p-4 text-center">
                 <span class="block text-[10px] text-slate-400 font-bold mb-1 uppercase">السابقة</span>
                 <span id="prev-name" class="font-black text-[#5e66f1] text-lg"></span>
             </button>
 
-            <button onclick="resetAll()" class="w-14 h-14 bg-red-50 text-red-300 rounded-2xl flex items-center justify-center border border-red-100 shadow-sm active:scale-90">
+            <button onclick="resetAll()" class="w-14 h-14 bg-red-50 text-red-300 rounded-2xl flex items-center justify-center border border-red-100 active:scale-90" title="تصفير">
                 🗑️
             </button>
 
@@ -93,14 +92,14 @@
             {id:110, name:"النصر"}, {id:111, name:"المسد"}, {id:112, name:"الإخلاص"}, {id:113, name:"الفلق"}, {id:114, name:"الناس"}
         ];
 
-        // بيانات أجزاء وأحزاب سورة البقرة فقط
-        const baqarahStructure = {
-            142: { juz: 2, label: "الجزء الثاني" },
-            253: { juz: 3, label: "الجزء الثالث" },
+        // مصفوفة تقسيمات سورة البقرة (بناءً على الصور المرفقة)
+        const baqarahParts = {
             26:  { hizb: "ربع الحزب ١" },
             44:  { hizb: "نصف الحزب ١" },
             60:  { hizb: "ثلاثة أرباع الحزب ١" },
-            75:  { hizb: "الحزب ٢" }
+            75:  { hizb: "الحزب ٢" },
+            142: { juz: "الجزء الثاني", hizb: "الحزب ٣" },
+            253: { juz: "الجزء الثالث", hizb: "الحزب ٥" }
         };
 
         let completedSurahs = JSON.parse(localStorage.getItem('al7ebi_quran_done')) || [];
@@ -130,7 +129,7 @@
             window.scrollTo(0,0);
             
             const bismillahArea = document.getElementById('bismillah-area');
-            // إخفاء البسملة الخارجية في الفاتحة والتوبة
+            // البسملة الخارجية تظهر في كل السور ماعدا الفاتحة والتوبة
             if (id === 1 || id === 9) bismillahArea.classList.add('hidden');
             else bismillahArea.classList.remove('hidden');
 
@@ -140,23 +139,21 @@
                 let ayahs = data.data.ayahs;
                 document.getElementById('header-title').innerText = `سُورَةُ ${allSurahs.find(s => s.id === id).name}`;
 
-                // حذف البسملة المكررة من أول آية
+                // --- حل مشكلة البسملة المكررة (إصلاح جذري) ---
                 if (id !== 1 && id !== 9) {
-                    const bismillahPattern = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
-                    if (ayahs[0].text.includes(bismillahPattern)) {
-                        ayahs[0].text = ayahs[0].text.replace(bismillahPattern, "").trim();
+                    // إذا بدأت الآية الأولى بكلمة "بِسْمِ" نقوم بحذف أول 38 حرف (طول البسملة بالتشكيل)
+                    if (ayahs[0].text.startsWith("بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ")) {
+                        ayahs[0].text = ayahs[0].text.replace("بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ", "").trim();
                     }
                 }
 
                 let finalHTML = "";
                 ayahs.forEach(a => {
                     // معالجة تقسيمات سورة البقرة
-                    if (id === 2) {
-                        if (baqarahStructure[a.numberInSurah]) {
-                            const struct = baqarahStructure[a.numberInSurah];
-                            if (struct.juz) finalHTML += `<div class="juz-divider">${struct.label}</div>`;
-                            if (struct.hizb) finalHTML += `<span class="hizb-badge">${struct.hizb}</span>`;
-                        }
+                    if (id === 2 && baqarahParts[a.numberInSurah]) {
+                        const part = baqarahParts[a.numberInSurah];
+                        if (part.juz) finalHTML += `<div class="juz-divider">${part.juz}</div>`;
+                        if (part.hizb) finalHTML += `<div class="w-full"><span class="hizb-badge">${part.hizb}</span></div>`;
                     }
                     finalHTML += `${a.text} ${toArabicNum(a.numberInSurah)} `;
                 });
@@ -165,7 +162,7 @@
                 contentDiv.style.fontSize = fontSize + 'px';
                 contentDiv.innerHTML = finalHTML;
                 updateNav(id);
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Error loading surah:", e); }
         }
 
         function filterSurahs() {
@@ -210,7 +207,7 @@
         }
 
         function resetAll() {
-            if(confirm("تصفير جميع الإنجازات؟")) {
+            if(confirm("تصفير جميع العلامات؟")) {
                 completedSurahs = [];
                 localStorage.removeItem('al7ebi_quran_done');
                 init();
