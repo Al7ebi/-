@@ -24,7 +24,7 @@
 </head>
 <body class="text-slate-900">
 
-    <!-- الرئيسية -->
+    <!-- الصفحة الرئيسية -->
     <div id="home-page" class="max-w-2xl mx-auto p-4 pb-24">
         <header class="text-center pt-16 pb-12">
             <h1 class="text-7xl font-black text-indigo-950 mb-4 tracking-tighter">القرآن الكريم</h1>
@@ -42,7 +42,7 @@
         <div id="surah-grid" class="grid grid-cols-3 gap-3 px-1"></div>
     </div>
 
-    <!-- القراءة -->
+    <!-- صفحة القراءة -->
     <div id="reading-page" class="max-w-4xl mx-auto hidden bg-white min-h-screen flex flex-col shadow-2xl">
         <div class="sticky top-0 bg-white/95 backdrop-blur z-50 p-5 flex justify-between items-center border-b">
             <button onclick="exitReader()" class="text-indigo-600 font-black text-xl">🔙 خروج</button>
@@ -59,8 +59,15 @@
             <div id="surah-content" class="quran-text text-slate-800"></div>
         </div>
 
+        <!-- الأزرار السفلية -->
         <div class="sticky bottom-0 bg-white border-t p-6 flex items-center justify-between gap-4">
             <button id="prev-btn" onclick="navigateSurah(-1)" class="flex-1 p-4 bg-slate-50 rounded-2xl text-center border font-bold text-indigo-600 border-slate-200"></button>
+            
+            <!-- زر الحذف المحدث: يحذف السورة الحالية فقط -->
+            <button onclick="resetCurrentSurah()" class="w-14 h-14 flex items-center justify-center bg-red-50 border border-red-100 rounded-2xl text-red-500 shadow-sm active:scale-90">
+                <span class="text-2xl">🗑️</span>
+            </button>
+
             <button id="next-btn" onclick="navigateSurah(1)" class="flex-1 p-4 bg-indigo-600 rounded-2xl text-center font-bold text-white shadow-lg"></button>
         </div>
     </div>
@@ -68,8 +75,9 @@
     <script>
         const allSurahs = [
             {id:1, name:"الفاتحة"}, {id:2, name:"البقرة"}, {id:78, name:"النبأ"}, {id:79, name:"النازعات"}, 
-            {id:80, name:"عبس"}, {id:81, name:"التكوير"}, {id:112, name:"الإخلاص"}, {id:114, name:"الناس"}
-        ]; // أضف البقية هنا بنفس النمط
+            {id:80, name:"عبس"}, {id:81, name:"التكوير"}, {id:82, name:"الانفطار"}, {id:83, name:"المطففين"},
+            {id:84, name:"الانشقاق"}, {id:85, name:"البروج"}, {id:112, name:"الإخلاص"}, {id:114, name:"الناس"}
+        ];
 
         let completedSurahs = JSON.parse(localStorage.getItem('al7ebi_quran_done')) || [];
         let currentId = null;
@@ -95,7 +103,6 @@
                 let ayahs = data.data.ayahs;
                 document.getElementById('header-title').innerText = `سُورَةُ ${allSurahs.find(s => s.id === id).name}`;
 
-                // حذف البسملة المكررة نهائياً (إصلاح الصور image_a3963e)
                 if (id !== 1 && id !== 9) {
                     const pattern = /^بِسْمِ\s*ٱللَّهِ\s*ٱلرَّحْمَٰنِ\s*ٱلرَّحِيمِ/g;
                     ayahs[0].text = ayahs[0].text.replace(pattern, "").trim();
@@ -148,6 +155,16 @@
             document.getElementById('home-page').classList.remove('hidden');
             document.getElementById('reading-page').classList.add('hidden');
             init();
+        }
+
+        // الوظيفة المطلوبة: حذف السورة الحالية فقط
+        function resetCurrentSurah() {
+            const currentName = allSurahs.find(s => s.id === currentId).name;
+            if(confirm(`هل تريد مسح علامة الإنجاز لسورة ${currentName} فقط؟`)) {
+                completedSurahs = completedSurahs.filter(id => id !== currentId);
+                localStorage.setItem('al7ebi_quran_done', JSON.stringify(completedSurahs));
+                alert(`تم مسح إنجاز سورة ${currentName}`);
+            }
         }
 
         function filterSurahs() {
