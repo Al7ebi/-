@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>مصحف الحبي</title>
 
   <!-- Tailwind -->
@@ -11,7 +11,7 @@
 
 <body class="bg-gray-100 text-gray-800">
 
-<!-- ================= HOME PAGE ================= -->
+<!-- ================= HOME ================= -->
 <div id="home-page" class="p-4">
 
   <!-- Header -->
@@ -23,19 +23,20 @@
   <!-- Search -->
   <div class="flex items-center bg-white rounded-full shadow px-4 py-2 mb-4">
     <input id="search" type="text" placeholder="ابحث عن سورة..."
-      class="flex-1 outline-none">
-    <button onclick="filterSurahs()">🔍</button>
+      class="flex-1 outline-none"
+      oninput="filterSurahs()">
+    <button>🔍</button>
   </div>
 
-  <!-- Surah Grid -->
+  <!-- Grid -->
   <div id="surah-grid" class="grid grid-cols-3 gap-3"></div>
 
 </div>
 
-<!-- ================= READING PAGE ================= -->
+<!-- ================= READER ================= -->
 <div id="reading-page" class="hidden flex flex-col h-screen">
 
-  <!-- Top Bar -->
+  <!-- Top -->
   <div class="sticky top-0 bg-white shadow p-3 flex justify-between items-center">
     <button onclick="exitReader()">⬅</button>
     <h2 id="surah-title" class="font-bold"></h2>
@@ -47,11 +48,13 @@
 
   <!-- Content -->
   <div class="p-4 overflow-y-auto flex-1 text-center leading-loose">
-    <div class="mb-4 text-lg">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+    <div id="basmala" class="mb-4 text-lg hidden">
+      بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+    </div>
     <div id="ayahs"></div>
   </div>
 
-  <!-- Bottom Bar -->
+  <!-- Bottom -->
   <div class="bg-white shadow p-3 flex justify-between">
     <button onclick="prevSurah()">⬅ السابق</button>
     <button onclick="resetCurrentSurah()">🗑️ حذف</button>
@@ -64,15 +67,23 @@
 
 // ================= STATE =================
 let allSurahs = [];
+let filteredSurahs = [];
 let currentSurah = null;
-let fontSize = 20;
+let fontSize = 22;
+
+const allowedSurahs = [1, 2, 18];
 
 // ================= INIT =================
 fetch('https://api.alquran.cloud/v1/surah')
   .then(res => res.json())
   .then(data => {
-    allSurahs = data.data;
-    renderSurahs(allSurahs);
+
+    allSurahs = data.data.filter(s =>
+      allowedSurahs.includes(s.number) || s.number >= 78
+    );
+
+    filteredSurahs = allSurahs;
+    renderSurahs(filteredSurahs);
   });
 
 // ================= UTIL =================
@@ -80,22 +91,25 @@ function toArabicNum(num) {
   return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
 }
 
-// ================= RENDER GRID =================
+// ================= GRID =================
 function renderSurahs(list) {
   const grid = document.getElementById('surah-grid');
+  const completed = getCompleted();
+
   grid.innerHTML = '';
 
-  const completed = JSON.parse(localStorage.getItem('completedSurahs') || '[]');
-
   list.forEach(surah => {
+
     const done = completed.includes(surah.number);
 
     grid.innerHTML += `
       <div onclick="loadSurah(${surah.number})"
-        class="bg-white p-3 rounded-xl shadow text-center cursor-pointer">
+        class="bg-white p-3 rounded-xl shadow text-center cursor-pointer hover:scale-105 transition">
+
         <div class="font-bold">${surah.name}</div>
-        <div class="text-sm text-gray-500">${surah.englishName}</div>
-        ${done ? '<div>✅</div>' : ''}
+        <div class="text-xs text-gray-500">${surah.englishName}</div>
+
+        ${done ? '<div class="mt-1">✅</div>' : ''}
       </div>
     `;
   });
@@ -103,31 +117,38 @@ function renderSurahs(list) {
 
 // ================= SEARCH =================
 function filterSurahs() {
-  const val = document.getElementById('search').value;
-  const filtered = allSurahs.filter(s =>
-    s.name.includes(val) || s.englishName.toLowerCase().includes(val.toLowerCase())
+  const val = document.getElementById('search').value.trim();
+
+  filteredSurahs = allSurahs.filter(s =>
+    s.name.includes(val) ||
+    s.englishName.toLowerCase().includes(val.toLowerCase())
   );
-  renderSurahs(filtered);
+
+  renderSurahs(filteredSurahs);
 }
 
-// ================= LOAD SURAH =================
+// ================= LOAD =================
 function loadSurah(id) {
   fetch(`https://api.alquran.cloud/v1/surah/${id}`)
     .then(res => res.json())
     .then(data => {
 
-      let ayahs = data.data.ayahs;
-
-      // Remove Basmala if needed
-      if (id !== 1 && id !== 9) {
-        ayahs[0].text = ayahs[0].text.replace(/^بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/, '');
-      }
-
       currentSurah = id;
+
+      let ayahs = data.data.ayahs;
+      const ayahContainer = document.getElementById('ayahs');
+      const basmala = document.getElementById('basmala');
+
+      // Show basmala only if needed
+      if (id !== 1 && id !== 9) {
+        basmala.classList.remove('hidden');
+        ayahs[0].text = ayahs[0].text.replace(/^بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/, '');
+      } else {
+        basmala.classList.add('hidden');
+      }
 
       document.getElementById('surah-title').innerText = data.data.name;
 
-      const ayahContainer = document.getElementById('ayahs');
       ayahContainer.innerHTML = '';
 
       ayahs.forEach(a => {
@@ -144,22 +165,32 @@ function loadSurah(id) {
 
 // ================= FONT =================
 function changeFont(val) {
-  fontSize += val;
+  fontSize = Math.max(16, fontSize + val);
   document.getElementById('ayahs').style.fontSize = fontSize + 'px';
 }
 
-// ================= NAVIGATION =================
+// ================= NAV =================
 function nextSurah() {
-  if (currentSurah < 114) loadSurah(currentSurah + 1);
+  const index = allSurahs.findIndex(s => s.number === currentSurah);
+  if (index < allSurahs.length - 1) {
+    loadSurah(allSurahs[index + 1].number);
+  }
 }
 
 function prevSurah() {
-  if (currentSurah > 1) loadSurah(currentSurah - 1);
+  const index = allSurahs.findIndex(s => s.number === currentSurah);
+  if (index > 0) {
+    loadSurah(allSurahs[index - 1].number);
+  }
 }
 
 // ================= STORAGE =================
+function getCompleted() {
+  return JSON.parse(localStorage.getItem('completedSurahs') || '[]');
+}
+
 function exitReader() {
-  let completed = JSON.parse(localStorage.getItem('completedSurahs') || '[]');
+  let completed = getCompleted();
 
   if (!completed.includes(currentSurah)) {
     completed.push(currentSurah);
@@ -168,15 +199,17 @@ function exitReader() {
   localStorage.setItem('completedSurahs', JSON.stringify(completed));
 
   togglePages();
-  renderSurahs(allSurahs);
+  renderSurahs(filteredSurahs);
 }
 
 function resetCurrentSurah() {
-  let completed = JSON.parse(localStorage.getItem('completedSurahs') || '[]');
+  let completed = getCompleted();
 
   completed = completed.filter(id => id !== currentSurah);
 
   localStorage.setItem('completedSurahs', JSON.stringify(completed));
+
+  renderSurahs(filteredSurahs);
 }
 
 // ================= UI =================
