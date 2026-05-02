@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>مصحف الحبي - المطور</title>
+    <title>مصحف الحبي - الإصدار النهائي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #fcfcfc; }
+        body { font-family: 'Cairo', sans-serif; background-color: #fcfcfc; -webkit-tap-highlight-color: transparent; }
         .quran-text { font-family: 'Amiri', serif; line-height: 2.8; }
         .bismillah { font-family: 'Amiri', serif; font-size: 1.8em; color: #1e1b4b; text-align: center; margin-bottom: 20px; display: block; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        /* تمييز السورة المكتملة باللون الأخضر */
         .surah-card.completed { background-color: #d1fae5 !important; border-color: #10b981 !important; }
         .surah-card.completed .surah-name { color: #065f46 !important; }
         .hidden { display: none; }
@@ -17,51 +18,59 @@
 </head>
 <body class="bg-gray-50">
 
+    <!-- الواجهة الرئيسية -->
     <div id="home-page" class="max-w-xl mx-auto p-4 pb-20">
         <header class="text-center py-8">
             <h1 class="text-3xl font-bold text-slate-900">المصحف الكريم</h1>
-            <p class="text-slate-500 text-xs mt-2">تتبع تلاوتك اليومية</p>
+            <p class="text-slate-500 text-xs mt-2">اضغط على السورة لبدء التتبع</p>
         </header>
 
-        <!-- شبكة السور: 3 أعمدة -->
+        <!-- شبكة السور: 3 أعمدة كما طلبت -->
         <div id="surah-grid" class="grid grid-cols-3 gap-2">
-            <!-- سيتم توليد السور هنا -->
+            <!-- سيتم توليد السور برمجياً هنا -->
         </div>
         
         <div class="text-center mt-10">
-            <button onclick="resetAll()" class="text-[10px] text-gray-400 underline">تصفير الإنجاز 🔄</button>
+            <button onclick="resetAll()" class="text-[10px] text-gray-400 underline">إعادة ضبط الإنجاز 🔄</button>
         </div>
     </div>
 
+    <!-- واجهة القراءة -->
     <div id="reading-page" class="max-w-2xl mx-auto hidden bg-white min-h-screen flex flex-col shadow-lg">
+        <!-- شريط علوي يحتوي على اسم السورة والتحكم بالخط -->
         <div class="sticky top-0 bg-white shadow-sm z-30 p-4 flex justify-between items-center border-b">
-            <button onclick="confirmExit()" class="text-indigo-600 font-bold text-sm">🔙 رجوع</button>
+            <button onclick="confirmExit()" class="text-indigo-600 font-bold text-sm">🔙 خروج</button>
             <h2 id="header-title" class="text-lg font-bold text-indigo-950">سورة</h2>
+            
+            <!-- وحدة التحكم بحجم الخط مع العداد الرقمي -->
             <div class="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded-lg border">
                 <button onclick="changeFontSize(-2)" class="w-7 h-7 bg-white shadow-sm rounded border font-bold">-</button>
-                <span id="font-size-display" class="text-xs font-bold text-indigo-600 w-5 text-center">30</span>
+                <span id="font-size-display" class="text-xs font-bold text-indigo-600 w-6 text-center">30</span>
                 <button onclick="changeFontSize(2)" class="w-7 h-7 bg-white shadow-sm rounded border font-bold">+</button>
             </div>
         </div>
 
         <div id="surah-container" class="flex-1 p-6 text-center">
+            <!-- البسملة في سطر مستقل تماماً -->
             <div id="bismillah-area" class="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
             <div id="surah-content" class="quran-text text-gray-800"></div>
         </div>
 
+        <!-- أزرار التنقل السفلية بأسماء السور -->
         <div class="sticky bottom-0 bg-gray-50 border-t p-4 grid grid-cols-2 gap-3 pb-8">
             <button id="prev-btn" onclick="askBeforeNavigate(-1)" class="bg-white border rounded-xl p-2 shadow-sm text-center">
-                <span class="block text-[9px] text-gray-400">السابقة</span>
-                <span id="prev-name" class="font-bold text-indigo-700 text-[11px]"></span>
+                <span class="block text-[9px] text-gray-400">السورة السابقة</span>
+                <span id="prev-name" class="font-bold text-indigo-700 text-[11px] truncate block"></span>
             </button>
             <button id="next-btn" onclick="askBeforeNavigate(1)" class="bg-white border rounded-xl p-2 shadow-sm text-center">
-                <span class="block text-[9px] text-gray-400">التالية</span>
-                <span id="next-name" class="font-bold text-indigo-700 text-[11px]"></span>
+                <span class="block text-[9px] text-gray-400">السورة التالية</span>
+                <span id="next-name" class="font-bold text-indigo-700 text-[11px] truncate block"></span>
             </button>
         </div>
     </div>
 
     <script>
+        // قائمة السور المحددة
         const allSurahs = [
             {id:1, name:"الفاتحة"}, {id:2, name:"البقرة"}, {id:18, name:"الكهف"},
             {id:78, name:"النبأ"}, {id:79, name:"النازعات"}, {id:80, name:"عبس"}, {id:81, name:"التكوير"},
@@ -82,8 +91,8 @@
         function init() {
             const grid = document.getElementById('surah-grid');
             grid.innerHTML = allSurahs.map(s => `
-                <button onclick="loadSurah(${s.id})" class="surah-card ${completedSurahs.includes(s.id) ? 'completed' : ''} bg-white p-3 rounded-xl border shadow-sm transition active:scale-90">
-                    <span class="surah-name block font-bold text-xs text-indigo-900">${s.name}</span>
+                <button onclick="loadSurah(${s.id})" class="surah-card ${completedSurahs.includes(s.id) ? 'completed' : ''} bg-white p-3 rounded-xl border shadow-sm transition active:scale-90 overflow-hidden">
+                    <span class="surah-name block font-bold text-[13px] text-indigo-900 truncate">${s.name}</span>
                 </button>
             `).join('');
         }
@@ -95,6 +104,7 @@
             window.scrollTo(0,0);
             
             const bismillahArea = document.getElementById('bismillah-area');
+            // إخفاء البسملة العلوية في الفاتحة (لأنها آية رقم 1) وفي التوبة
             if (id === 1 || id === 9) bismillahArea.classList.add('hidden');
             else bismillahArea.classList.remove('hidden');
 
@@ -105,7 +115,7 @@
                 const info = allSurahs.find(s => s.id === id);
                 document.getElementById('header-title').innerText = `سُورَةُ ${info.name}`;
 
-                // حذف البسملة من أول آية بشكل قطعي لضمان عدم تكرارها في السطر الثاني
+                // تنظيف النص: حذف البسملة من أول آية لضمان عدم ظهورها مرتين
                 const bisPattern = /^بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ/;
                 if (id !== 1 && id !== 9) {
                     ayahs[0].text = ayahs[0].text.replace(bisPattern, "").trim();
@@ -118,7 +128,7 @@
                 ).join(' ');
 
                 updateNav(id);
-            } catch (e) { alert("خطأ في الاتصال"); }
+            } catch (e) { alert("تأكد من اتصال الإنترنت"); }
         }
 
         function changeFontSize(v) {
@@ -131,10 +141,19 @@
             const idx = allSurahs.findIndex(s => s.id === id);
             const prev = allSurahs[idx-1];
             const next = allSurahs[idx+1];
-            document.getElementById('prev-btn').style.opacity = prev ? "1" : "0.3";
-            document.getElementById('prev-name').innerText = prev ? prev.name : "---";
-            document.getElementById('next-btn').style.opacity = next ? "1" : "0.3";
-            document.getElementById('next-name').innerText = next ? next.name : "---";
+            
+            const pBtn = document.getElementById('prev-btn');
+            const nBtn = document.getElementById('next-btn');
+
+            if(prev) {
+                pBtn.style.visibility = "visible";
+                document.getElementById('prev-name').innerText = prev.name;
+            } else pBtn.style.visibility = "hidden";
+
+            if(next) {
+                nBtn.style.visibility = "visible";
+                document.getElementById('next-name').innerText = next.name;
+            } else nBtn.style.visibility = "hidden";
         }
 
         function askBeforeNavigate(step) {
@@ -160,7 +179,7 @@
         }
 
         function resetAll() {
-            if(confirm("مسح جميع الألوان؟")) {
+            if(confirm("هل أنت متأكد من مسح جميع سجلات الإنجاز وتصفير الألوان؟")) {
                 completedSurahs = [];
                 localStorage.clear();
                 init();
