@@ -7,9 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Cairo', sans-serif; background-color: #f8faff; -webkit-tap-highlight-color: transparent; }
         .quran-text { font-family: 'Amiri', serif; line-height: 2.8; text-align: justify; text-align-last: center; }
-        .bismillah { font-family: 'Amiri', serif; font-size: 2em; color: #1e1b4b; text-align: center; margin-bottom: 25px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; }
+        .bismillah { font-family: 'Amiri', serif; font-size: 2.2em; color: #1e1b4b; text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
         
         /* تنسيق السورة المكتملة */
         .surah-card.completed { background-color: #ecfdf5 !important; border-color: #10b981 !important; }
@@ -18,10 +18,13 @@
         .surah-card.completed .check-mark { display: block; }
 
         .hidden { display: none; }
-        .ayah-num { color: #10b981; font-weight: bold; margin: 0 4px; font-family: 'Amiri', serif; font-size: 0.9em; }
+        .ayah-num { color: #10b981; font-weight: bold; margin: 0 4px; font-family: 'Amiri', serif; font-size: 1.1em; }
         
-        /* تأثيرات الظل والبحث */
-        .search-container { background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .search-container { background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; }
+        
+        /* تصميم الأزرار الاحترافي حسب image_a3f437.png */
+        .nav-btn { background: white; border-radius: 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.2s; }
+        .nav-btn:active { scale: 0.95; background-color: #f8fafc; }
     </style>
 </head>
 <body class="text-slate-900">
@@ -33,24 +36,15 @@
             <p class="text-2xl text-slate-500 font-medium opacity-90">قراءة واستماع وتصفح القرآن الكريم برواية حفص</p>
         </header>
 
-        <!-- شريط البحث (مطابق للصورة) -->
         <div class="mb-10 px-2">
             <div class="search-container flex items-center p-2 border border-slate-100">
                 <input type="text" id="surah-search" placeholder="ابحث في نص الآيات أو اسم السورة" 
-                       class="w-full p-4 outline-none text-lg bg-transparent text-slate-400 font-medium" oninput="filterSurahs()">
-                <button class="bg-[#5e66f1] text-white px-10 py-4 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-md">بحث</button>
+                       class="w-full p-4 outline-none text-lg bg-transparent text-slate-600 font-medium placeholder:text-slate-300" oninput="filterSurahs()">
+                <button class="bg-[#5e66f1] text-white px-10 py-4 rounded-2xl font-bold shadow-md">بحث</button>
             </div>
         </div>
 
-        <div id="surah-grid" class="grid grid-cols-3 gap-3 px-1">
-            <!-- السور تولد هنا -->
-        </div>
-        
-        <div class="text-center mt-16">
-            <button onclick="resetAll()" class="p-4 bg-white border border-slate-200 rounded-full text-slate-300 hover:text-red-500 transition shadow-sm active:scale-90">
-                🗑️ <span class="text-[10px] block mt-1 font-bold">تصفير</span>
-            </button>
-        </div>
+        <div id="surah-grid" class="grid grid-cols-3 gap-3 px-1"></div>
     </div>
 
     <!-- صفحة القراءة -->
@@ -61,9 +55,9 @@
             </button>
             <h2 id="header-title" class="text-2xl font-black text-indigo-950">سورة</h2>
             <div class="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-xl border">
-                <button onclick="changeFontSize(-2)" class="w-8 h-8 bg-white shadow-sm rounded-lg border font-black text-xl hover:bg-slate-100">-</button>
-                <span id="font-size-display" class="text-sm font-black text-indigo-600 w-6 text-center">30</span>
-                <button onclick="changeFontSize(2)" class="w-8 h-8 bg-white shadow-sm rounded-lg border font-black text-xl hover:bg-slate-100">+</button>
+                <button onclick="changeFontSize(-2)" class="w-8 h-8 bg-white shadow-sm rounded-lg border font-black text-xl">-</button>
+                <span id="font-size-display" class="text-sm font-black text-indigo-600 w-6 text-center">32</span>
+                <button onclick="changeFontSize(2)" class="w-8 h-8 bg-white shadow-sm rounded-lg border font-black text-xl">+</button>
             </div>
         </div>
 
@@ -72,14 +66,19 @@
             <div id="surah-content" class="quran-text text-slate-800 tracking-wide"></div>
         </div>
 
-        <div class="sticky bottom-0 bg-slate-50 border-t p-6 grid grid-cols-2 gap-4 pb-10">
-            <button id="prev-btn" onclick="askBeforeNavigate(-1)" class="bg-white border-2 border-slate-100 rounded-2xl p-3 shadow-sm hover:border-indigo-200 transition">
-                <span class="block text-[10px] text-slate-400 font-bold mb-1">السابقة</span>
-                <span id="prev-name" class="font-black text-indigo-700 text-sm truncate block"></span>
+        <div class="sticky bottom-0 bg-white/80 backdrop-blur-md border-t p-4 flex items-center justify-between gap-3 pb-10 px-6">
+            <button id="prev-btn" onclick="askBeforeNavigate(-1)" class="nav-btn flex-1 p-4 text-center">
+                <span class="block text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-widest">السابقة</span>
+                <span id="prev-name" class="font-black text-[#5e66f1] text-lg truncate block"></span>
             </button>
-            <button id="next-btn" onclick="askBeforeNavigate(1)" class="bg-white border-2 border-slate-100 rounded-2xl p-3 shadow-sm hover:border-indigo-200 transition">
-                <span class="block text-[10px] text-slate-400 font-bold mb-1">التالية</span>
-                <span id="next-name" class="font-black text-indigo-700 text-sm truncate block"></span>
+
+            <button onclick="resetAll()" class="w-14 h-14 flex items-center justify-center bg-slate-50 border border-slate-100 rounded-2xl text-slate-300 hover:text-red-500 transition shadow-sm active:scale-90" title="تصفير الإنجاز">
+                <span class="text-2xl">🗑️</span>
+            </button>
+
+            <button id="next-btn" onclick="askBeforeNavigate(1)" class="nav-btn flex-1 p-4 text-center">
+                <span class="block text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-widest">التالية</span>
+                <span id="next-name" class="font-black text-[#5e66f1] text-lg truncate block"></span>
             </button>
         </div>
     </div>
@@ -119,8 +118,7 @@
         }
 
         function filterSurahs() {
-            const val = document.getElementById('surah-search').value;
-            init(val);
+            init(document.getElementById('surah-search').value);
         }
 
         async function loadSurah(id) {
@@ -137,14 +135,12 @@
                 const res = await fetch(`https://api.alquran.cloud/v1/surah/${id}`);
                 const data = await res.json();
                 let ayahs = data.data.ayahs;
-                const info = allSurahs.find(s => s.id === id);
-                document.getElementById('header-title').innerText = `سُورَةُ ${info.name}`;
+                document.getElementById('header-title').innerText = `سُورَةُ ${allSurahs.find(s => s.id === id).name}`;
 
+                // منطق منع التكرار:
                 if (id !== 1 && id !== 9) {
                     const searchWord = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
-                    if (ayahs[0].text.includes(searchWord)) {
-                        ayahs[0].text = ayahs[0].text.split(searchWord).pop().trim();
-                    }
+                    if (ayahs[0].text.includes(searchWord)) ayahs[0].text = ayahs[0].text.split(searchWord).pop().trim();
                 }
 
                 const contentDiv = document.getElementById('surah-content');
@@ -165,18 +161,11 @@
             const prev = allSurahs[idx-1];
             const next = allSurahs[idx+1];
             
-            const pBtn = document.getElementById('prev-btn');
-            const nBtn = document.getElementById('next-btn');
-
-            if(prev) {
-                pBtn.style.visibility = "visible";
-                document.getElementById('prev-name').innerText = prev.name;
-            } else pBtn.style.visibility = "hidden";
-
-            if(next) {
-                nBtn.style.visibility = "visible";
-                document.getElementById('next-name').innerText = next.name;
-            } else nBtn.style.visibility = "hidden";
+            document.getElementById('prev-btn').style.visibility = prev ? "visible" : "hidden";
+            if(prev) document.getElementById('prev-name').innerText = prev.name;
+            
+            document.getElementById('next-btn').style.visibility = next ? "visible" : "hidden";
+            if(next) document.getElementById('next-name').innerText = next.name;
         }
 
         function askBeforeNavigate(step) {
@@ -202,10 +191,12 @@
         }
 
         function resetAll() {
-            if(confirm("هل تريد تصفير الإنجاز؟")) {
+            if(confirm("تصفير الإنجاز ومسح العلامات؟")) {
                 completedSurahs = [];
                 localStorage.clear();
                 init();
+                document.getElementById('home-page').classList.remove('hidden');
+                document.getElementById('reading-page').classList.add('hidden');
             }
         }
 
