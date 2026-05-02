@@ -1,39 +1,221 @@
-// 1. تحسين دالة الـ Grid لتكون أكثر فخامة
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>مصحف الحبي</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Amiri&family=Cairo:wght@400;900&display=swap" rel="stylesheet">
+
+<style>
+body { font-family: 'Cairo', sans-serif; background:#f8faff; }
+.quran-text { font-family: 'Amiri', serif; line-height: 2.8; text-align: justify; text-align-last: center; }
+.ayah-num { color:#10b981; font-weight:bold; margin:0 4px; }
+.bismillah { font-family:'Amiri'; font-size:2.2em; text-align:center; margin-bottom:20px; }
+</style>
+</head>
+
+<body>
+
+<!-- HOME -->
+<div id="home-page" class="max-w-2xl mx-auto p-4 pb-24">
+
+<header class="text-center pt-10 pb-6">
+<h1 class="text-5xl font-black text-indigo-950">القرآن الكريم</h1>
+<p class="text-slate-500">مصحف الحبي</p>
+</header>
+
+<div class="mb-6">
+<div class="flex bg-white rounded-full p-2 shadow">
+<span class="bg-indigo-600 text-white px-3 rounded-full ml-2">🔍</span>
+<input id="search" class="flex-1 outline-none" placeholder="ابحث..." oninput="filterSurahs()">
+</div>
+</div>
+
+<div id="surah-grid" class="grid grid-cols-3 gap-4"></div>
+
+</div>
+
+<!-- READER -->
+<div id="reading-page" class="hidden fixed inset-0 bg-white flex flex-col">
+
+<div class="sticky top-0 bg-white shadow p-3 flex justify-between">
+<button onclick="exitReader()">⬅</button>
+<h2 id="surah-title"></h2>
+<div>
+<button onclick="changeFont(-2)">-</button>
+<button onclick="changeFont(2)">+</button>
+</div>
+</div>
+
+<div class="p-4 overflow-y-auto flex-1">
+<div id="basmala" class="bismillah hidden">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+<div id="ayahs" class="quran-text"></div>
+</div>
+
+<div class="p-3 flex justify-between">
+<button onclick="prevSurah()">السابق</button>
+<button onclick="resetCurrentSurah()">🗑️</button>
+<button onclick="nextSurah()">التالي</button>
+</div>
+
+</div>
+
+<script>
+
+// ================= STATE =================
+let allSurahs = [];
+let filteredSurahs = [];
+let currentSurah = null;
+let fontSize = 30;
+
+const allowedSurahs = [1,2,18];
+
+// ================= ELEMENTS =================
+const grid = document.getElementById('surah-grid');
+const ayahsEl = document.getElementById('ayahs');
+const basmalaEl = document.getElementById('basmala');
+
+// ================= INIT =================
+fetch('https://api.alquran.cloud/v1/surah')
+.then(r=>r.json())
+.then(data=>{
+allSurahs = data.data.filter(s =>
+allowedSurahs.includes(s.number) || s.number >= 78
+);
+filteredSurahs = allSurahs;
+renderSurahs(filteredSurahs);
+})
+.catch(err=>{
+alert("فشل تحميل السور");
+console.error(err);
+});
+
+// ================= UTIL =================
+function toArabicNum(n){
+const d=['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+return `<span class="ayah-num">﴿${n.toString().split('').map(x=>d[x]).join('')}﴾</span>`;
+}
+
+// 🔥 Regex احترافي (يتجاهل التشكيل)
+const basmalaRegex = /^[\u064B-\u0652\s]*ب[\u064B-\u0652]*س[\u064B-\u0652]*م[\u064B-\u0652]*\s*ا?ل?ل[\u064B-\u0652]*ه[\u064B-\u0652]*\s*ا?ل?ر[\u064B-\u0652]*ح[\u064B-\u0652]*م[\u064B-\u0652]*ن[\u064B-\u0652]*\s*ا?ل?ر[\u064B-\u0652]*ح[\u064B-\u0652]*ي[\u064B-\u0652]*م[\u064B-\u0652]*/;
+
+// ================= GRID =================
 function renderSurahs(list){
-    const completed = JSON.parse(localStorage.getItem('completedSurahs')||'[]');
-    grid.innerHTML = list.map(s=>`
-        <div onclick="loadSurah(${s.number})" 
-             class="relative bg-white p-5 rounded-2xl border border-slate-100 shadow-sm text-center cursor-pointer hover:shadow-md hover:border-indigo-200 transition-all active:scale-95">
-            <div class="font-black text-indigo-950">${s.name}</div>
-            ${completed.includes(s.number) ? '<div class="absolute top-2 right-2 text-[10px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full font-bold">✅ تم</div>' : ''}
-        </div>
-    `).join('');
+const completed = JSON.parse(localStorage.getItem('completedSurahs')||'[]');
+
+grid.innerHTML = list.map(s=>`
+<div onclick="loadSurah(${s.number})"
+class="relative bg-white p-5 rounded-2xl shadow hover:shadow-lg hover:-translate-y-1 transition cursor-pointer
+bg-gradient-to-br from-white to-indigo-50">
+
+<div class="font-bold text-indigo-900">${s.name}</div>
+
+${completed.includes(s.number) ? `
+<span class="absolute top-2 left-2 text-green-500 text-sm font-bold">✔</span>
+` : ''}
+
+</div>
+`).join('');
 }
 
-// 2. تحسين دالة التحميل (إضافة صعود للأعلى + معالجة بسملة أقوى)
+// ================= SEARCH =================
+function filterSurahs(){
+const val = document.getElementById('search').value.trim().toLowerCase();
+
+filteredSurahs = allSurahs.filter(s =>
+s.name.includes(val) ||
+s.englishName.toLowerCase().includes(val)
+);
+
+renderSurahs(filteredSurahs);
+}
+
+// ================= LOAD =================
 function loadSurah(id){
-    window.scrollTo(0,0); // صعود للأعلى فوراً
-    ayahsEl.innerHTML = `<div class="py-10 text-slate-400 animate-pulse">جاري تحميل كلام الله...</div>`;
 
-    fetch(`https://api.alquran.cloud/v1/surah/${id}`)
-    .then(r=>r.json())
-    .then(data=>{
-        currentSurah = id;
-        let ayahs = data.data.ayahs;
+window.scrollTo(0,0); // 🔥 مهم
 
-        if(id!==1 && id!==9){
-            basmalaEl.classList.remove('hidden');
-            // Regex مطور جداً يتجاهل كل أنواع التشكيل في البسملة
-            const advancedBasmala = /^[\u0621-\u064B\s]*بِسْمِ\s+ٱللَّهِ\s+ٱلرَّحْمَٰنِ\s+ٱلرَّحِيمِ/g;
-            ayahs[0].text = ayahs[0].text.replace(advancedBasmala, '').trim();
-        } else {
-            basmalaEl.classList.add('hidden');
-        }
+ayahsEl.innerHTML = "جاري التحميل...";
 
-        document.getElementById('surah-title').textContent = `سورة ${data.data.name}`;
-        ayahsEl.innerHTML = ayahs.map(a => `${a.text} ${toArabicNum(a.numberInSurah)}`).join(' ');
-        ayahsEl.style.fontSize = fontSize+'px';
-        
-        if(document.getElementById('reading-page').classList.contains('hidden')) togglePages();
-    });
+fetch(`https://api.alquran.cloud/v1/surah/${id}`)
+.then(r=>r.json())
+.then(data=>{
+
+currentSurah = id;
+let ayahs = data.data.ayahs;
+
+if(id!==1 && id!==9){
+basmalaEl.classList.remove('hidden');
+ayahs[0].text = ayahs[0].text.replace(basmalaRegex,'');
+}else{
+basmalaEl.classList.add('hidden');
 }
+
+document.getElementById('surah-title').textContent = data.data.name;
+
+ayahsEl.innerHTML = ayahs.map(a =>
+`${a.text} ${toArabicNum(a.numberInSurah)}`
+).join(' ');
+
+ayahsEl.style.fontSize = fontSize+'px';
+
+togglePages();
+
+})
+.catch(err=>{
+ayahsEl.innerHTML = "فشل تحميل السورة";
+console.error(err);
+});
+}
+
+// ================= FONT =================
+function changeFont(v){
+fontSize = Math.max(20, fontSize + v);
+ayahsEl.style.fontSize = fontSize+'px';
+}
+
+// ================= NAV =================
+function nextSurah(){
+const i = allSurahs.findIndex(s=>s.number===currentSurah);
+if(i < allSurahs.length-1) loadSurah(allSurahs[i+1].number);
+}
+
+function prevSurah(){
+const i = allSurahs.findIndex(s=>s.number===currentSurah);
+if(i > 0) loadSurah(allSurahs[i-1].number);
+}
+
+// ================= STORAGE =================
+function exitReader(){
+let c = JSON.parse(localStorage.getItem('completedSurahs')||'[]');
+if(!c.includes(currentSurah)) c.push(currentSurah);
+localStorage.setItem('completedSurahs', JSON.stringify(c));
+
+togglePages();
+renderSurahs(filteredSurahs);
+}
+
+function resetCurrentSurah(){
+if(confirm("حذف السورة من الإنجاز؟")){
+let c = JSON.parse(localStorage.getItem('completedSurahs')||'[]');
+c = c.filter(id=>id!==currentSurah);
+localStorage.setItem('completedSurahs', JSON.stringify(c));
+
+togglePages();
+renderSurahs(filteredSurahs);
+}
+}
+
+// ================= UI =================
+function togglePages(){
+document.getElementById('home-page').classList.toggle('hidden');
+document.getElementById('reading-page').classList.toggle('hidden');
+}
+
+</script>
+
+</body>
+</html>
